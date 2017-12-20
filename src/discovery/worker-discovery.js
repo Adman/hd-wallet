@@ -103,8 +103,10 @@ export class WorkerDiscovery {
 
         return StreamWithEnding.fromPromise(
             Promise.all([this.deriveXpub(xpub, network, 0), this.deriveXpub(xpub, network, 1)]).then(([externalXpub, internalXpub]) => {
+                console.log("ABCD", xpub, internalXpub, externalXpub);
                 const internal = BitcoinJsHDNode.fromBase58(internalXpub, network, true);
                 const external = BitcoinJsHDNode.fromBase58(externalXpub, network, true);
+                console.log("OOK");
 
                 const sources = [
                     this.createWorkerAddressSource(external, network, segwit),
