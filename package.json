@@ -16,7 +16,8 @@
     "flow": "make flow",
     "eslint": "make eslint",
     "karma-firefox": "make karma-firefox",
-    "karma-chrome": "make karma-chrome"
+    "karma-chrome": "make karma-chrome",
+    "jest": "jest test"
   },
   "author": "TREZOR <info@trezor.io>",
   "repository": "https://github.com/trezor/hd-wallet",
@@ -50,14 +51,15 @@
     "babel-cli": "^6.26.0",
     "bchaddrjs": "^0.2.1",
     "bitcoinjs-lib-zcash": "^3.4.1",
+    "jest": "^23.4.1",
     "queue": "^4.4.2",
     "socket.io-client": "^1.7.3",
     "whatwg-fetch": "^0.11.0"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.1",
-    "babel-plugin-istanbul": "^4.1.6",
     "babel-plugin-add-module-exports": "0.1.2",
+    "babel-plugin-istanbul": "^4.1.6",
     "babel-plugin-transform-class-properties": "6.4.0",
     "babel-plugin-transform-flow-strip-types": "6.4.0",
     "babel-plugin-transform-object-rest-spread": "6.3.13",

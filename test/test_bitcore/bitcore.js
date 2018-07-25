@@ -139,8 +139,6 @@ describe('bitcore', () => {
         });
 
         it('socket and workingUrl are null on non-working bitcore', function (done) {
-            this.timeout(20 * 1000);
-
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain.socket.promise.then(() => {
                 blockchain.destroy();
@@ -153,8 +151,6 @@ describe('bitcore', () => {
         });
 
         it('emits error event on non-working bitcore', function (done) {
-            this.timeout(20 * 1000);
-
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             testStream(
                 blockchain.errors,
@@ -168,13 +164,10 @@ describe('bitcore', () => {
         });
 
         it('starts bitcore', function () {
-            this.timeout(60 * 1000);
             return startBitcore();
         });
 
         it('socket and workingUrl are as expected on working bitcore', function (done) {
-            this.timeout(20 * 1000);
-
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain.socket.promise.then((socket) => {
                 assert.ok(socket instanceof Socket);
@@ -188,8 +181,6 @@ describe('bitcore', () => {
         });
 
         it('does not emit error event on working bitcore', function (done) {
-            this.timeout(20 * 1000);
-
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
 
             let ended = false;
@@ -210,20 +201,16 @@ describe('bitcore', () => {
         });
 
         it('stops bitcore', function () {
-            this.timeout(60 * 1000);
             return stopBitcore();
         });
     });
 
     describe('status check', () => {
         it('starts bitcore', function () {
-            this.timeout(60 * 1000);
             return startBitcore();
         });
 
         it('resolves on working bitcore', function () {
-            this.timeout(20 * 1000);
-
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain._silent = true;
             return blockchain.hardStatusCheck().then((res) => {
@@ -233,13 +220,10 @@ describe('bitcore', () => {
         });
 
         it('stops bitcore', function () {
-            this.timeout(60 * 1000);
             return stopBitcore();
         });
 
         it('rejects on non-working bitcore', function () {
-            this.timeout(20 * 1000);
-
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain._silent = true;
             return blockchain.hardStatusCheck().then((res) => {
@@ -251,7 +235,6 @@ describe('bitcore', () => {
 
     describe('subscribe', () => {
         it('starts bitcore', function () {
-            this.timeout(20 * 1000);
             return startBitcore();
         });
 
@@ -270,7 +253,6 @@ describe('bitcore', () => {
         });
 
         it('socket registers tx mined to address', function (done) {
-            this.timeout(30 * 1000);
             const address = getAddress();
 
             testBlockchain((blockchain, done) => {
@@ -283,7 +265,6 @@ describe('bitcore', () => {
         });
 
         it('socket registers normal tx', function (done) {
-            this.timeout(30 * 1000);
             const address = getAddress();
 
             testBlockchain((blockchain, done) => {
@@ -300,7 +281,6 @@ describe('bitcore', () => {
         });
 
         it('notifications register tx mined to address', function (done) {
-            this.timeout(30 * 1000);
             const saddress = getAddress();
 
             testBlockchain((blockchain, done) => {
@@ -328,7 +308,6 @@ describe('bitcore', () => {
         let lastAddress = null;
 
         it('notifications register normal tx', function (done) {
-            this.timeout(30 * 1000);
             const saddress = getAddress();
 
             // keep address for further tests
@@ -360,7 +339,6 @@ describe('bitcore', () => {
         });
 
         it('socket registers outgoing tx', function (done) {
-            this.timeout(30 * 1000);
             if (lastTx == null) {
                 done(new Error('previous null'));
                 return;
@@ -382,7 +360,6 @@ describe('bitcore', () => {
 
     describe('lookupTransactionsStream', () => {
         it('looks up unconfirmed transactions', function (done) {
-            this.timeout(2 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -414,7 +391,6 @@ describe('bitcore', () => {
         });
 
         it('looks up confirmed transactions', function (done) {
-            this.timeout(2 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -447,7 +423,6 @@ describe('bitcore', () => {
         });
 
         it('streams error when sent error from bitcore', function (done) {
-            this.timeout(10 * 1000);
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
 
             const addresses = [getAddress(), getAddress(), getAddress()];
@@ -460,7 +435,6 @@ describe('bitcore', () => {
         });
 
         it('streams error when bitcore turned off', function (done) {
-            this.timeout(60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -475,12 +449,10 @@ describe('bitcore', () => {
         });
 
         it('starts bitcore', function () {
-            this.timeout(60 * 1000);
             return startBitcore();
         });
 
         it('streams error when bitcore turned off during action', function (done) {
-            this.timeout(10 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -526,12 +498,10 @@ describe('bitcore', () => {
 
     describe('lookupTransactions + lookupTransactionIds', () => {
         it('starts bitcore', function () {
-            this.timeout(60 * 1000);
             return startBitcore();
         });
 
         it('looks up unconfirmed transactions', function (done) {
-            this.timeout(2 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -563,7 +533,6 @@ describe('bitcore', () => {
         });
 
         it('looks up unconfirmed transactions ids', function (done) {
-            this.timeout(2 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -587,7 +556,6 @@ describe('bitcore', () => {
         });
 
         it('looks up confirmed transactions ids', function (done) {
-            this.timeout(5 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -612,7 +580,6 @@ describe('bitcore', () => {
         });
 
         it('looks up confirmed transactions', function (done) {
-            this.timeout(5 * 60 * 1000);
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -648,7 +615,6 @@ describe('bitcore', () => {
         });
 
         it('streams error when sent error from bitcore', function (done) {
-            this.timeout(10 * 1000);
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
 
             const addresses = [getAddress(), getAddress(), getAddress()];
@@ -665,7 +631,6 @@ describe('bitcore', () => {
 
     describe('sync status', () => {
         it('looks up sync status', function (done) {
-            this.timeout(30 * 1000);
             testBlockchain((blockchain, done) => {
                 blockchain.lookupSyncStatus().then(oldStatus => {
                     return run('bitcore-regtest-cli generate 300').then(() => {
@@ -685,7 +650,6 @@ describe('bitcore', () => {
 
     describe('blockhash', () => {
         it('looks up blockhash', function (done) {
-            this.timeout(30 * 1000);
             testBlockchain((blockchain, done) => {
                 blockchain.lookupBlockHash(0).then(hash => {
                     assert(hash === '0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206');
@@ -701,7 +665,6 @@ describe('bitcore', () => {
         let outTx;
 
         it('sends tx', function (done) {
-            this.timeout(30 * 1000);
             if (lastTx == null) {
                 done(new Error('previous null'));
                 return;
@@ -718,7 +681,6 @@ describe('bitcore', () => {
         });
 
         it('looks up tx', function (done) {
-            this.timeout(30 * 1000);
             testBlockchain((blockchain, done) => {
                 blockchain.lookupTransaction(outTx.id).then((tx) => {
                     assert(tx.hash === outTx.id);
@@ -730,7 +692,6 @@ describe('bitcore', () => {
 
     describe('estimatetx fees', () => {
         it('estimates something', function (done) {
-            this.timeout(60 * 1000);
             testBlockchain((blockchain, done) => {
                 blockchain.estimateTxFees([5, 6, 7], false).then(res => {
                     assert(typeof res === 'object');
@@ -750,7 +711,6 @@ describe('bitcore', () => {
 
     describe('estimate smart tx fees', () => {
         it('estimates something', function (done) {
-            this.timeout(60 * 1000);
             testBlockchain((blockchain, done) => {
                 blockchain.estimateSmartTxFees([5, 6, 7], false).then(res => {
                     assert(typeof res === 'object');
@@ -770,8 +730,6 @@ describe('bitcore', () => {
 
     describe('disconnect errors', () => {
         it('throws error on disconnect', function (done) {
-            this.timeout(30 * 1000);
-
             testBlockchain((blockchain, done) => {
                 testStream(blockchain.errors, a => a instanceof Error, 20 * 1000, done);
             }, () => stopBitcore(), done);

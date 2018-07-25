@@ -9,8 +9,6 @@ import {discoveryWorkerFactory, xpubWorker, xpubFilePromise} from './_worker-hel
 describe('discover account', () => {
     fixtures.forEach(fixture => {
         it(fixture.name, function (done) {
-            this.timeout(30 * 1000);
-
             const blockchain = new MockBitcore(fixture.spec, done);
             const discovery = new WorkerDiscovery(discoveryWorkerFactory, xpubWorker, xpubFilePromise, blockchain);
             const stream = discovery.discoverAccount(
