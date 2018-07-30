@@ -1,21 +1,13 @@
 /* @flow */
 import type { Network as BitcoinJsNetwork } from 'bitcoinjs-lib-zcash';
 import { HDNode as BitcoinJsHDNode } from 'bitcoinjs-lib-zcash';
-import type {
-    AccountInfo,
-    AccountLoadStatus,
-} from './index';
+import type { AccountInfo, AccountLoadStatus, ForceAddedTransaction } from './index';
 import { Emitter, Stream, StreamWithEnding } from '../utils/stream';
-
 import { WorkerDiscoveryHandler } from './worker/outside';
-
 import { WorkerChannel as AddressWorkerChannel } from '../utils/simple-worker-channel';
-
 import type { Blockchain, TransactionWithHeight } from '../bitcore';
 import { BrowserAddressSource, WorkerAddressSource } from '../address-source';
 import type { AddressSource } from '../address-source';
-
-import type { ForceAddedTransaction } from './index';
 
 export class WorkerDiscovery {
     discoveryWorkerFactory: () => Worker;
@@ -93,7 +85,11 @@ export class WorkerDiscovery {
         return Promise.all([
             WorkerDiscoveryHandler.deriveAddresses(sources[0], null, 0, gap - 1),
             WorkerDiscoveryHandler.deriveAddresses(sources[1], null, 0, gap - 1),
-        ]).then(([addressesA, addressesB]) => this.chain.lookupTransactionsIds(addressesA.concat(addressesB), 100000000, 0)).then(ids => ids.length !== 0);
+        ]).then(([addressesA, addressesB]) => this.chain.lookupTransactionsIds(
+            addressesA.concat(addressesB),
+            100000000,
+            0,
+        )).then(ids => ids.length !== 0);
     }
 
     discoverAccount(
@@ -112,29 +108,33 @@ export class WorkerDiscovery {
     ): StreamWithEnding<AccountLoadStatus, AccountInfo> {
         const node = this.tryHDNode(xpub, network);
         if (node instanceof Error) {
-            return StreamWithEnding.fromStreamAndPromise(Stream.fromArray([]), Promise.reject(node));
+            return StreamWithEnding
+                .fromStreamAndPromise(Stream.fromArray([]), Promise.reject(node));
         }
 
         return StreamWithEnding.fromPromise(
-            Promise.all([this.deriveXpub(xpub, network, 0), this.deriveXpub(xpub, network, 1)]).then(([externalXpub, internalXpub]) => {
-                const internal = BitcoinJsHDNode.fromBase58(internalXpub, network, true);
-                const external = BitcoinJsHDNode.fromBase58(externalXpub, network, true);
+            Promise.all([
+                this.deriveXpub(xpub, network, 0),
+                this.deriveXpub(xpub, network, 1)])
+                .then(([externalXpub, internalXpub]) => {
+                    const internal = BitcoinJsHDNode.fromBase58(internalXpub, network, true);
+                    const external = BitcoinJsHDNode.fromBase58(externalXpub, network, true);
 
-                const sources = [
-                    this.createWorkerAddressSource(external, network, segwit),
-                    this.createWorkerAddressSource(internal, network, segwit),
-                ];
+                    const sources = [
+                        this.createWorkerAddressSource(external, network, segwit),
+                        this.createWorkerAddressSource(internal, network, segwit),
+                    ];
 
-                const out = new WorkerDiscoveryHandler(
-                    this.discoveryWorkerFactory,
-                    this.chain,
-                    sources,
-                    network,
-                    cashAddress || false,
-                    this.forceAddedTransactions,
-                );
-                return out.discovery(initial, xpub, segwit === 'p2sh', gap, timeOffset);
-            }),
+                    const out = new WorkerDiscoveryHandler(
+                        this.discoveryWorkerFactory,
+                        this.chain,
+                        sources,
+                        network,
+                        cashAddress || false,
+                        this.forceAddedTransactions,
+                    );
+                    return out.discovery(initial, xpub, segwit === 'p2sh', gap, timeOffset);
+                }),
         );
     }
 
@@ -226,7 +226,7 @@ export class WorkerDiscovery {
     }
 
     createWorkerAddressSource(node: BitcoinJsHDNode, network: BitcoinJsNetwork, segwit: 'off' | 'p2sh'): ?WorkerAddressSource {
-        const addressWorkerChannel = this.addressWorkerChannel;
+        const { addressWorkerChannel } = this;
         if (addressWorkerChannel == null) {
             return null;
         }
@@ -239,7 +239,7 @@ export class WorkerDiscovery {
         network: BitcoinJsNetwork,
         index: number,
     ): Promise<string> {
-        const addressWorkerChannel = this.addressWorkerChannel;
+        const { addressWorkerChannel } = this;
         if (addressWorkerChannel == null) {
             return Promise.resolve(BitcoinJsHDNode.fromBase58(xpub, network, true).derive(index).toBase58());
         }
