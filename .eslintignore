@@ -1,1 +1,4 @@
-type
+trezor-crypto/*
+fastxpub/**
+type/**
+coverage/**
