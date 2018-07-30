@@ -2,3 +2,4 @@ trezor-crypto/*
 fastxpub/**
 type/**
 coverage/**
+test/test_bitcore/**

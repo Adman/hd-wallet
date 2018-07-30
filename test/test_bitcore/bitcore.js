@@ -2,6 +2,7 @@
 
 import assert from 'assert';
 
+/* eslint-disable */
 import bitcoin from 'bitcoinjs-lib-zcash';
 import { BitcoreBlockchain } from '../../src/bitcore';
 import { Stream } from '../../src/utils/stream';

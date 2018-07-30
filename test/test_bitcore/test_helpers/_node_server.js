@@ -27,6 +27,7 @@ const server = http.createServer((request, response) => {
         request.on('end', () => {
             const postdata = JSON.parse(queryData);
             if (typeof postdata === 'string') {
+                // eslint-disable-next-line
                 const bashdata = postdata.replace(/'/g, "'" + '"' + "'" + '"' + "'");
                 exec(`/bin/bash -c '${bashdata}' 2>&1`, (er, stdout) => {
                     response.write(JSON.stringify(stdout));
