@@ -1,7 +1,7 @@
 
 
 const http = require('http');
-const exec = require('child_process').exec;
+const { exec } = require('child_process');
 
 const server = http.createServer((request, response) => {
     response.writeHead(200, {

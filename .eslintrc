@@ -6,10 +6,12 @@
   "plugins": [
       "node",
       "import",
-      "jest"
+      "jest",
+      "flowtype"
   ],
   "extends": [
-      "airbnb-base"
+      "airbnb-base",
+      "plugin:flowtype/recommended"
   ],
   "rules": {
       "indent": [2, 4, { "SwitchCase": 1 }],

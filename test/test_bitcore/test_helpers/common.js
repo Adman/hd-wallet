@@ -1,4 +1,4 @@
-import { run } from './_node_client.js';
+import { run } from './_node_client';
 
 export function startBitcore() {
     return run('test/test_bitcore/test_helpers/start_bitcore.sh')

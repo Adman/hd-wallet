@@ -49,7 +49,7 @@ export function splitByCompleteness(
     complete: Array<OutputRequestWithAddress>,
     incomplete: Array<OutputRequest>,
 } {
-    const result : {
+    const result: {
         complete: Array<OutputRequestWithAddress>,
         incomplete: Array<OutputRequest>,
     } = {

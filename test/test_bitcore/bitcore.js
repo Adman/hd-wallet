@@ -9,8 +9,8 @@ import { Socket } from '../../src/socketio-worker/outside';
 
 import {
     startBitcore, stopBitcore, testStream, testStreamMultiple,
-} from './test_helpers/common.js';
-import { run } from './test_helpers/_node_client.js';
+} from './test_helpers/common';
+import { run } from './test_helpers/_node_client';
 
 
 // hack for workers in both node and browser
@@ -19,10 +19,10 @@ const socketWorkerFactory = () => {
         const TinyWorker = require('tiny-worker');
         return new TinyWorker(() => {
             require('babel-register');
-            require('../../../src/socketio-worker/inside.js');
+            require('../../../src/socketio-worker/inside.');
         });
     }
-    return new Worker('../../../src/socketio-worker/inside.js');
+    return new Worker('../../../src/socketio-worker/inside');
 };
 
 function testBlockchain(doFirst, doLater, done) {

@@ -1,6 +1,4 @@
 import { networks } from 'bitcoinjs-lib-zcash';
-
-
 import h from 'virtual-dom/h';
 import diff from 'virtual-dom/diff';
 import patch from 'virtual-dom/patch';

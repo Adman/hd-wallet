@@ -10,7 +10,9 @@ describe('discover account', () => {
     fixtures.forEach((fixture) => {
         it(fixture.name, (done) => {
             const blockchain = new MockBitcore(fixture.spec, done);
-            const discovery = new WorkerDiscovery(discoveryWorkerFactory, xpubWorker, xpubFilePromise, blockchain);
+            const discovery = new WorkerDiscovery(
+                discoveryWorkerFactory, xpubWorker, xpubFilePromise, blockchain,
+            );
             const stream = discovery.discoverAccount(
                 fixture.start,
                 fixture.xpub,

@@ -9,9 +9,7 @@ import utils from './_utils';
 describe('coinselect index', () => {
     fixtures.forEach((f) => {
         it(f.description, () => {
-            const inputLength = f.inputLength;
-            const outputLength = f.outputLength;
-            const dustThreshold = f.dustThreshold;
+            const { inputLength, outputLength, dustThreshold } = f;
 
             const inputs = utils.expand(f.inputs, true, inputLength);
             const outputs = utils.expand(f.outputs, false, outputLength);

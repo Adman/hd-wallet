@@ -15,7 +15,7 @@
     "coverage": "make coverage",
     "flow": "make flow",
     "eslint": "make eslint",
-    "lint": "npx eslint ./ --fix",
+    "lint": "npx eslint ./",
     "karma-firefox": "make karma-firefox",
     "karma-chrome": "make karma-chrome",
     "jest": "jest test"
@@ -71,7 +71,7 @@
     "browserify-shim": "^3.8.14",
     "eslint": "^5.2.0",
     "eslint-config-airbnb-base": "^13.0.0",
-    "eslint-plugin-flowtype": "^2.30.4",
+    "eslint-plugin-flowtype": "^2.50.0",
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-jest": "^21.18.0",
     "eslint-plugin-node": "^7.0.1",
