@@ -1,9 +1,9 @@
-'use strict';
+
 
 const http = require('http');
 const exec = require('child_process').exec;
 
-const server = http.createServer(function (request, response) {
+const server = http.createServer((request, response) => {
     response.writeHead(200, {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -14,7 +14,7 @@ const server = http.createServer(function (request, response) {
     let queryData = '';
 
     if (request.method === 'POST') {
-        request.on('data', function (data) {
+        request.on('data', (data) => {
             queryData += data;
             if (queryData.length > 1e6) {
                 queryData = '';
@@ -24,11 +24,11 @@ const server = http.createServer(function (request, response) {
             }
         });
 
-        request.on('end', function () {
+        request.on('end', () => {
             const postdata = JSON.parse(queryData);
             if (typeof postdata === 'string') {
                 const bashdata = postdata.replace(/'/g, "'" + '"' + "'" + '"' + "'");
-                exec("/bin/bash -c '" + bashdata + "' 2>&1", function (er, stdout) {
+                exec(`/bin/bash -c '${bashdata}' 2>&1`, (er, stdout) => {
                     response.write(JSON.stringify(stdout));
                     response.end();
                 });

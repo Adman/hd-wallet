@@ -48,9 +48,8 @@ export class Emitter<T> {
             if (listener.handler === handler) {
                 listener.detached = true;
                 return false;
-            } else {
-                return true;
             }
+            return true;
         });
     }
 
@@ -72,12 +71,14 @@ type Controller<T> = (update: Updater<T>, finish: Finisher) => Disposer;
 
 export class Stream<T> {
     values: Emitter<T>;
+
     finish: Emitter<void>;
+
     dispose: Disposer;
 
     static fromEmitter<T>(
         emitter: Emitter<T>,
-        dispose: () => void
+        dispose: () => void,
     ): Stream<T> {
         return new Stream((update, finish) => {
             let disposed = false;
@@ -98,7 +99,7 @@ export class Stream<T> {
     static fromEmitterFinish<T>(
         emitter: Emitter<T>,
         finisher: Emitter<void>,
-        dispose: () => void
+        dispose: () => void,
     ): Stream<T> {
         return new Stream((update, finish) => {
             let disposed = false;
@@ -122,13 +123,13 @@ export class Stream<T> {
     }
 
     static fromArray<T>(
-        array: Array<T>
+        array: Array<T>,
     ): Stream<T> {
         return new Stream((update, finish) => {
             let disposed = false;
             setTimeout(() => {
                 if (!disposed) {
-                    array.forEach(t => {
+                    array.forEach((t) => {
                         update(t);
                     });
                     finish();
@@ -141,12 +142,12 @@ export class Stream<T> {
     }
 
     static fromPromise<T>(
-        promise: Promise<Stream<T>>
+        promise: Promise<Stream<T>>,
     ): Stream<T> {
         return new Stream((update, finish) => {
             let stream_;
             let disposed = false;
-            promise.then(stream => {
+            promise.then((stream) => {
                 if (!disposed) {
                     stream.values.attach(v => update(v));
                     stream.finish.attach(() => finish());
@@ -154,7 +155,7 @@ export class Stream<T> {
                 }
             }, () => {
                 setTimeout(
-                  () => finish(), 1
+                    () => finish(), 1,
                 );
             });
             return () => {
@@ -169,7 +170,7 @@ export class Stream<T> {
     static generate<T>(
         initial: T,
         generate: (state: T) => Promise<T>,
-        condition: (state: T) => boolean
+        condition: (state: T) => boolean,
     ): Stream<T> {
         return new Stream((update, finish) => {
             let disposed = false;
@@ -195,7 +196,7 @@ export class Stream<T> {
     static setLater<T>(): {
         stream: Stream<T>,
         setter: (s: Stream<T>) => void,
-    } {
+        } {
         const df = deferred();
         let set = false;
         const setter = (s: Stream<T>) => {
@@ -207,7 +208,7 @@ export class Stream<T> {
         };
         const stream = new Stream((update, finish) => {
             let s: ?Stream<T> = null;
-            df.promise.then(ns => {
+            df.promise.then((ns) => {
                 s = ns;
                 ns.values.attach((v) => {
                     update(v);
@@ -222,7 +223,7 @@ export class Stream<T> {
                 }
             };
         });
-        return {stream, setter};
+        return { stream, setter };
     }
 
     static simple<T>(value: T): Stream<T> {
@@ -265,7 +266,7 @@ export class Stream<T> {
                 });
             });
             return () => {
-                streams.forEach((s) => s.dispose());
+                streams.forEach(s => s.dispose());
             };
         });
     }
@@ -285,13 +286,13 @@ export class Stream<T> {
                 });
             });
             return () => {
-                streams.forEach((s) => s.dispose());
+                streams.forEach(s => s.dispose());
             };
         });
     }
 
     static filterNull<T>(
-        stream: Stream<?T>
+        stream: Stream<?T>,
     ): Stream<T> {
         return new Stream((update, finish) => {
             stream.values.attach((value) => {
@@ -309,7 +310,7 @@ export class Stream<T> {
         this.finish = new Emitter();
         this.dispose = controller(
             (value) => { this.values.emit(value); },
-            () => { this.finish.emit(); }
+            () => { this.finish.emit(); },
         );
     }
 
@@ -374,7 +375,7 @@ export class Stream<T> {
             let disposed = false;
             this.values.attach((value) => {
                 const previousNow = previous;
-                previous = fn(value).then(u => {
+                previous = fn(value).then((u) => {
                     previousNow.then(() => {
                         if (!disposed) {
                             update(u);
@@ -398,13 +399,13 @@ export class Stream<T> {
             let disposed = false;
             this.values.attach((value) => {
                 const previousNow = previous;
-                previous = fn(value).then(u => {
+                previous = fn(value).then((u) => {
                     previousNow.then(() => {
                         if (!disposed) {
                             update(u);
                         }
                     });
-                }, error => {
+                }, (error) => {
                     previousNow.then(() => {
                         if (!disposed) {
                             update(error);
@@ -472,7 +473,10 @@ export class Stream<T> {
 
 export class StreamWithEnding<UpdateT, EndingT> {
     stream: Stream<UpdateT>;
-    ending: Promise<EndingT>; // ending never resolves before stream finishes
+
+    ending: Promise<EndingT>;
+
+    // ending never resolves before stream finishes
     dispose: (e: Error) => void;
 
     static fromStreamAndPromise(s: Stream<UpdateT>, ending: Promise<EndingT>): StreamWithEnding<UpdateT, EndingT> {
@@ -497,7 +501,7 @@ export class StreamWithEnding<UpdateT, EndingT> {
         res.stream = Stream.fromPromise(p.then(s => s.stream));
         res.ending = p.then(s => s.ending);
         let resolved = null;
-        p.then(s => {
+        p.then((s) => {
             resolved = s;
         });
         res.dispose = (e: Error) => {

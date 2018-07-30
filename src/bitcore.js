@@ -102,16 +102,25 @@ type BcHistories = { items: Array<BcHistory>, totalCount: number };
 type SocketWorkerFactory = () => Worker;
 
 export class BitcoreBlockchain {
-    errors: Stream<Error>; // socket errors
-    notifications: Stream<TransactionWithHeight>; // activity on subscribed addresses
+    errors: Stream<Error>;
+
+    // socket errors
+    notifications: Stream<TransactionWithHeight>;
+
+    // activity on subscribed addresses
     blocks: Stream<void>;
 
-    addresses: Set<string>; // subscribed addresses
+    addresses: Set<string>;
+
+    // subscribed addresses
     socket: Deferred<Socket> = deferred();
 
     socketWorkerFactory: SocketWorkerFactory;
+
     endpoints: Array<string>;
+
     workingUrl: string = 'none';
+
     zcash: boolean;
 
     hasSmartTxFees: boolean; // does server support estimatesmartfee
@@ -121,7 +130,7 @@ export class BitcoreBlockchain {
     static _tryEndpoint(
         endpoints: Array<string>,
         socketWorkerFactory: SocketWorkerFactory,
-        tried: {[k: string]: boolean}
+        tried: {[k: string]: boolean},
     ): Promise<{socket: Socket, url: string}> {
         const untriedEndpoints = endpoints.filter((e, i) => !tried[i.toString()]);
 
@@ -130,13 +139,12 @@ export class BitcoreBlockchain {
         }
 
         const random = uniqueRandom(untriedEndpoints.length);
-        return onlineStatusCheck(socketWorkerFactory, untriedEndpoints[random]).then(socket => {
+        return onlineStatusCheck(socketWorkerFactory, untriedEndpoints[random]).then((socket) => {
             if (socket) {
-                return {socket, url: untriedEndpoints[random]};
-            } else {
-                tried[random.toString()] = true;
-                return BitcoreBlockchain._tryEndpoint(endpoints, socketWorkerFactory, tried);
+                return { socket, url: untriedEndpoints[random] };
             }
+            tried[random.toString()] = true;
+            return BitcoreBlockchain._tryEndpoint(endpoints, socketWorkerFactory, tried);
         });
     }
 
@@ -147,12 +155,9 @@ export class BitcoreBlockchain {
         this.endpoints = endpoints;
         this.zcash = false;
 
-        const lookupTM = (socket: Socket): Stream<TransactionWithHeight> => {
-            return socket.observe('bitcoind/addresstxid').mapPromise(
-                ({txid}) =>
-                    this.lookupTransaction(txid)
-            );
-        };
+        const lookupTM = (socket: Socket): Stream<TransactionWithHeight> => socket.observe('bitcoind/addresstxid').mapPromise(
+            ({ txid }) => this.lookupTransaction(txid),
+        );
         const observeBlocks = (socket: Socket): Stream<void> => {
             socket.subscribe('bitcoind/hashblock');
             return socket.observe('bitcoind/hashblock');
@@ -165,15 +170,15 @@ export class BitcoreBlockchain {
         this.notifications = notifications.stream;
         this.blocks = blocks.stream;
 
-        const tried = {'-1': true};
-        BitcoreBlockchain._tryEndpoint(endpoints, socketWorkerFactory, tried).then(({socket, url}) => {
+        const tried = { '-1': true };
+        BitcoreBlockchain._tryEndpoint(endpoints, socketWorkerFactory, tried).then(({ socket, url }) => {
             const trySmartFee = estimateSmartTxFee(socket, 2, false).then(
                 () => {
                     this.hasSmartTxFees = true;
                 },
                 () => {
                     this.hasSmartTxFees = false;
-                }
+                },
             );
             trySmartFee.then(() => {
                 this.workingUrl = url;
@@ -186,7 +191,7 @@ export class BitcoreBlockchain {
             errors.setter(Stream.simple(new Error('All backends are offline.')));
             if (!this._silent) {
                 this.socket.reject(new Error('All backends are offline.'));
-                this.socket.promise.catch((e) => console.error(e));
+                this.socket.promise.catch(e => console.error(e));
             }
         });
     }
@@ -195,15 +200,15 @@ export class BitcoreBlockchain {
     // this is for repeated checks after one failure
     hardStatusCheck(): Promise<boolean> {
         return Promise.all(this.endpoints.map(endpoint => onlineStatusCheck(this.socketWorkerFactory, endpoint)))
-        .then((statuschecks) => {
-            statuschecks.forEach(s => {
-                if (s != null) {
-                    s.close();
-                }
+            .then((statuschecks) => {
+                statuschecks.forEach((s) => {
+                    if (s != null) {
+                        s.close();
+                    }
+                });
+                const on = statuschecks.filter(i => i != null);
+                return on.length > 0;
             });
-            const on = statuschecks.filter(i => i != null);
-            return on.length > 0;
-        });
     }
 
     subscribe(inAddresses: Set<string>) {
@@ -215,8 +220,8 @@ export class BitcoreBlockchain {
                 throw new Error('Input not a set of strings.');
             }
         }
-        this.socket.promise.then(socket => {
-            const newAddresses = [...inAddresses].filter((a) => !(this.addresses.has(a)));
+        this.socket.promise.then((socket) => {
+            const newAddresses = [...inAddresses].filter(a => !(this.addresses.has(a)));
             newAddresses.forEach(a => this.addresses.add(a));
             if (newAddresses.length !== 0) {
                 for (let i = 0; i < newAddresses.length; i += 20) {
@@ -227,7 +232,7 @@ export class BitcoreBlockchain {
     }
 
     destroy() {
-        this.socket.promise.then(socket => {
+        this.socket.promise.then((socket) => {
             socket.close();
         });
     }
@@ -238,22 +243,20 @@ export class BitcoreBlockchain {
     lookupTransactionsStream(
         addresses: Array<string>,
         start: number,
-        end: number
+        end: number,
     ): Stream<Array<TransactionWithHeight> | Error> {
         const res = Stream.fromPromise(
-            this.socket.promise.then(socket => {
-                return lookupAllAddressHistories(
-                    socket,
-                    addresses,
-                    start,
-                    end
-                ).map((r) => {
-                    if (r instanceof Error) {
-                        return r;
-                    }
-                    return r.items.map((item: BcTransactionInfo): TransactionWithHeight => convertTx(this.zcash, item.tx));
-                });
-            })
+            this.socket.promise.then(socket => lookupAllAddressHistories(
+                socket,
+                addresses,
+                start,
+                end,
+            ).map((r) => {
+                if (r instanceof Error) {
+                    return r;
+                }
+                return r.items.map((item: BcTransactionInfo): TransactionWithHeight => convertTx(this.zcash, item.tx));
+            })),
         );
         return res;
     }
@@ -264,15 +267,15 @@ export class BitcoreBlockchain {
     lookupTransactions(
         addresses: Array<string>,
         start: number,
-        end: number
+        end: number,
     ): Promise<Array<TransactionWithHeight>> {
         const maybeRes: Promise<Array<TransactionWithHeight> | Error> = this.lookupTransactionsStream(
             addresses,
             start,
-            end
+            end,
         ).reduce((
             previous: Array<TransactionWithHeight> | Error,
-            current: Array<TransactionWithHeight> | Error
+            current: Array<TransactionWithHeight> | Error,
         ) => {
             if (previous instanceof Error) {
                 return previous;
@@ -293,48 +296,38 @@ export class BitcoreBlockchain {
     lookupTransactionsIds(
         addresses: Array<string>,
         start: number,
-        end: number
+        end: number,
     ): Promise<Array<string>> {
-        return this.socket.promise.then(socket =>
-            Promise.all([
-                lookupTransactionsIdsMempool(socket, addresses, true, start, end),
-                lookupTransactionsIdsMempool(socket, addresses, false, start, end),
-            ])
-        ).then(([a, b]) => a.concat(b));
+        return this.socket.promise.then(socket => Promise.all([
+            lookupTransactionsIdsMempool(socket, addresses, true, start, end),
+            lookupTransactionsIdsMempool(socket, addresses, false, start, end),
+        ])).then(([a, b]) => a.concat(b));
     }
 
     lookupTransaction(hash: string): Promise<TransactionWithHeight> {
-        return this.socket.promise.then(socket =>
-            lookupDetailedTransaction(socket, hash)
-                .then((info: BcDetailedTransaction): TransactionWithHeight => convertTx(this.zcash, info))
-        );
+        return this.socket.promise.then(socket => lookupDetailedTransaction(socket, hash)
+            .then((info: BcDetailedTransaction): TransactionWithHeight => convertTx(this.zcash, info)));
     }
 
     sendTransaction(hex: string): Promise<string> {
-        return this.socket.promise.then(socket =>
-            sendTransaction(socket, hex)
-        );
+        return this.socket.promise.then(socket => sendTransaction(socket, hex));
     }
 
     lookupBlockHash(height: number): Promise<string> {
-        return this.socket.promise.then(socket =>
-            lookupBlockHash(socket, height)
-        );
+        return this.socket.promise.then(socket => lookupBlockHash(socket, height));
     }
 
     lookupSyncStatus(): Promise<BcSyncStatus> {
-        return this.socket.promise.then(socket =>
-            lookupSyncStatus(socket)
-        );
+        return this.socket.promise.then(socket => lookupSyncStatus(socket));
     }
 
     estimateSmartTxFees(blocks: Array<number>, conservative: boolean): Promise<TxFees> {
-        return this.socket.promise.then(socket => {
+        return this.socket.promise.then((socket) => {
             let res: Promise<TxFees> = Promise.resolve({});
-            blocks.forEach(block => {
+            blocks.forEach((block) => {
                 res = res.then((previous: TxFees): TxFees => {
                     const feePromise = this.hasSmartTxFees ? estimateSmartTxFee(socket, block, conservative) : Promise.resolve(-1);
-                    return feePromise.then(fee => {
+                    return feePromise.then((fee) => {
                         previous[block] = fee;
                         return previous;
                     });
@@ -345,18 +338,16 @@ export class BitcoreBlockchain {
     }
 
     estimateTxFees(blocks: Array<number>, skipMissing: boolean): Promise<TxFees> {
-        return this.socket.promise.then(socket => {
+        return this.socket.promise.then((socket) => {
             let res: Promise<TxFees> = Promise.resolve({});
-            blocks.forEach(block => {
-                res = res.then((previous: TxFees): TxFees => {
-                    return estimateTxFee(socket, block).then(fee => {
-                        const add = skipMissing ? fee !== -1 : true;
-                        if (add) {
-                            previous[block] = fee;
-                        }
-                        return previous;
-                    });
-                });
+            blocks.forEach((block) => {
+                res = res.then((previous: TxFees): TxFees => estimateTxFee(socket, block).then((fee) => {
+                    const add = skipMissing ? fee !== -1 : true;
+                    if (add) {
+                        previous[block] = fee;
+                    }
+                    return previous;
+                }));
             });
             return res;
         });
@@ -367,7 +358,7 @@ function lookupAllAddressHistories(
     socket: Socket,
     addresses: Array<string>,
     start: number,
-    end: number
+    end: number,
 ): Stream<(BcHistories & { from: number, to: number }) | Error> {
     return Stream.combineFlat([
         lookupAddressHistoriesMempool(socket, addresses, true, start, end),
@@ -409,12 +400,10 @@ function lookupAddressHistoriesMempool(
             // * 5 is quite aggressive, but in reality, the transactions are either
             // all normal, <500 B (so 5 transactions is probably even maybe too cautious),
             // or are all giant (> 20 kB) so taking by 1 is the best
-            const previousTxLength = previous.items.reduce((total, history) => {
-                return total + history.tx.hex.length / 2;
-            }, 0);
+            const previousTxLength = previous.items.reduce((total, history) => total + history.tx.hex.length / 2, 0);
 
             if (previousTxLength <= 5000 && !first) {
-                pageLength = pageLength * 5;
+                pageLength *= 5;
                 pageLength = Math.min(50, pageLength);
             }
 
@@ -430,17 +419,16 @@ function lookupAddressHistoriesMempool(
                 to,
                 mempool,
                 start,
-                end
-            ).then((result) => ({
+                end,
+            ).then(result => ({
                 ...result,
                 from,
                 to,
             }), (error: mixed) => {
                 if (typeof error === 'object' && error != null && error instanceof Error) {
                     return error;
-                } else {
-                    return new Error(JSON.stringify(error));
                 }
+                return new Error(JSON.stringify(error));
             });
         },
         (state: (BcHistories & { from: number, to: number }) | Error) => {
@@ -448,7 +436,7 @@ function lookupAddressHistoriesMempool(
                 return false;
             }
             return state.to < state.totalCount;
-        }
+        },
     );
 }
 
@@ -457,7 +445,7 @@ function lookupTransactionsIdsMempool(
     addresses: Array<string>,
     mempool: boolean,
     start: number, // recent block height (inclusive)
-    end: number    // older block height (inclusive)
+    end: number, // older block height (inclusive)
 ): Promise<Array<string>> {
     const method = 'getAddressTxids';
     const rangeParam = mempool ? {
@@ -479,11 +467,11 @@ function lookupTransactionsIdsMempool(
 function lookupAddressHistories(
     socket: Socket,
     addresses: Array<string>,
-    from: number,   // pagination from index (inclusive)
-    to: number,     // pagination to index (not inclusive)
+    from: number, // pagination from index (inclusive)
+    to: number, // pagination to index (not inclusive)
     mempool: boolean,
     start: number, // recent block height (inclusive)
-    end: number    // older block height (inclusive)
+    end: number, // older block height (inclusive)
 ): Promise<BcHistories> {
     const method = 'getAddressHistory';
     const rangeParam = mempool ? {
@@ -526,25 +514,25 @@ function sendTransaction(socket: Socket, hex: string): Promise<string> {
 function lookupBlockHash(socket: Socket, height: number): Promise<string> {
     const method = 'getBlockHeader';
     const params = [height];
-    return socket.send({method, params}).then(res => res.hash);
+    return socket.send({ method, params }).then(res => res.hash);
 }
 
 function lookupSyncStatus(socket: Socket): Promise<BcSyncStatus> {
     const method = 'getInfo';
     const params = [];
-    return socket.send({method, params}).then(res => { return {height: res.blocks}; });
+    return socket.send({ method, params }).then(res => ({ height: res.blocks }));
 }
 
 function estimateSmartTxFee(socket: Socket, blocks: number, conservative: boolean): Promise<number> {
     const method = 'estimateSmartFee';
     const params = [blocks, conservative];
-    return socket.send({method, params});
+    return socket.send({ method, params });
 }
 
 function estimateTxFee(socket: Socket, blocks: number): Promise<number> {
     const method = 'estimateFee';
     const params = [blocks];
-    return socket.send({method, params});
+    return socket.send({ method, params });
 }
 
 function onlineStatusCheck(socketWorkerFactory: SocketWorkerFactory, endpoint: string): Promise<?Socket> {
@@ -558,7 +546,7 @@ function onlineStatusCheck(socketWorkerFactory: SocketWorkerFactory, endpoint: s
             lookupBlockHash(socket, 0),
         ]).then(
             () => resolve(true),
-            () => resolve(false)
+            () => resolve(false),
         );
     });
     return conn.then((res) => {
@@ -573,11 +561,7 @@ function onlineStatusCheck(socketWorkerFactory: SocketWorkerFactory, endpoint: s
 function observeErrors(socket: Socket): Stream<Error> {
     const errortypes = ['connect_error', 'reconnect_error', 'error', 'close', 'disconnect'];
 
-    const s = Stream.combineFlat(errortypes.map(type =>
-        socket.observe(type).map((k: mixed) =>
-            new Error(`${JSON.stringify(k)} (${type})`)
-        )
-    ));
+    const s = Stream.combineFlat(errortypes.map(type => socket.observe(type).map((k: mixed) => new Error(`${JSON.stringify(k)} (${type})`))));
     return s;
 }
 

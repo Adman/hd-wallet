@@ -1,4 +1,4 @@
-import {run} from '../test_helpers/_node_client.js';
+import { run } from './_node_client.js';
 
 export function startBitcore() {
     return run('test/test_bitcore/test_helpers/start_bitcore.sh')
@@ -7,11 +7,11 @@ export function startBitcore() {
 
 export function stopBitcore() {
     return run('pkill bitcored')
-          .then(() => promiseTimeout(15 * 1000));
+        .then(() => promiseTimeout(15 * 1000));
 }
 
 export function promiseTimeout(time) {
-    return new Promise((resolve) => setTimeout(() => resolve(), time));
+    return new Promise(resolve => setTimeout(() => resolve(), time));
 }
 
 export function testStreamMultiple(stream, test, timeout, done, times) {
@@ -21,26 +21,24 @@ export function testStreamMultiple(stream, test, timeout, done, times) {
     const fun = (value, detach) => {
         if (typeof value === 'object' && value instanceof Array) {
             value.forEach(v => fun(v, detach));
-        } else {
-            if (!ended) {
-                try {
-                    test(value);
-                } catch (e) {
-                    if (!ended) {
-                        ended = true;
-                        done(e);
-                    }
-                    detach();
-                    throw e;
+        } else if (!ended) {
+            try {
+                test(value);
+            } catch (e) {
+                if (!ended) {
+                    ended = true;
+                    done(e);
                 }
-                i++;
-                if (i === times) {
-                    if (!ended) {
-                        ended = true;
-                        done();
-                    }
-                    detach();
+                detach();
+                throw e;
+            }
+            i++;
+            if (i === times) {
+                if (!ended) {
+                    ended = true;
+                    done();
                 }
+                detach();
             }
         }
     };
@@ -57,4 +55,3 @@ export function testStreamMultiple(stream, test, timeout, done, times) {
 export function testStream(stream, test, timeout, done) {
     return testStreamMultiple(stream, test, timeout, done, 1);
 }
-

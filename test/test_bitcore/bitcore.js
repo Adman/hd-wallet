@@ -2,14 +2,16 @@
 
 import assert from 'assert';
 
-import {BitcoreBlockchain} from '../../src/bitcore';
-import {Stream} from '../../src/utils/stream';
-import {Socket} from '../../src/socketio-worker/outside';
-
-import {startBitcore, stopBitcore, testStream, testStreamMultiple} from './test_helpers/common.js';
-import {run} from './test_helpers/_node_client.js';
-
 import bitcoin from 'bitcoinjs-lib-zcash';
+import { BitcoreBlockchain } from '../../src/bitcore';
+import { Stream } from '../../src/utils/stream';
+import { Socket } from '../../src/socketio-worker/outside';
+
+import {
+    startBitcore, stopBitcore, testStream, testStreamMultiple,
+} from './test_helpers/common.js';
+import { run } from './test_helpers/_node_client.js';
+
 
 // hack for workers in both node and browser
 const socketWorkerFactory = () => {
@@ -19,9 +21,8 @@ const socketWorkerFactory = () => {
             require('babel-register');
             require('../../../src/socketio-worker/inside.js');
         });
-    } else {
-        return new Worker('../../../src/socketio-worker/inside.js');
     }
+    return new Worker('../../../src/socketio-worker/inside.js');
 };
 
 function testBlockchain(doFirst, doLater, done) {
@@ -50,13 +51,13 @@ function hasIntersection(array1, array2) {
 
 const hdnode = bitcoin.HDNode.fromBase58(
     'tprv8ZgxMBicQKsPdfrBPLV36ipU9BHcXhufs1yjchpUWjryXmWEDtciLdgUWXQBGbTqxjzgCxZxA5vMeqSmoBaFjRZLHbhBzzVGZZPmzHqHaSm',
-//     'tpubDD7tXK8KeQ3YY83yWq755fHY2JW8Ha8Q765tknUM5rSvjPcGWfUppDFMpQ1ScziKfW3ZNtZvAD7M3u7bSs7HofjTD3KP3YxPK7X6hwV8Rk2',
-    bitcoin.networks.testnet
+    //     'tpubDD7tXK8KeQ3YY83yWq755fHY2JW8Ha8Q765tknUM5rSvjPcGWfUppDFMpQ1ScziKfW3ZNtZvAD7M3u7bSs7HofjTD3KP3YxPK7X6hwV8Rk2',
+    bitcoin.networks.testnet,
 );
 
 let i = 0;
 function getAddress() {
-    i = i + 1;
+    i += 1;
     const addressNode = hdnode.derive(i);
     return addressNode.getAddress();
 }
@@ -138,7 +139,7 @@ describe('bitcore', () => {
             });
         });
 
-        it('socket and workingUrl are null on non-working bitcore', function (done) {
+        it('socket and workingUrl are null on non-working bitcore', (done) => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain.socket.promise.then(() => {
                 blockchain.destroy();
@@ -150,24 +151,22 @@ describe('bitcore', () => {
             });
         });
 
-        it('emits error event on non-working bitcore', function (done) {
+        it('emits error event on non-working bitcore', (done) => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             testStream(
                 blockchain.errors,
-                (error) => assert(error.message === 'All backends are offline.'),
+                error => assert(error.message === 'All backends are offline.'),
                 19 * 1000,
                 () => {
                     blockchain.destroy();
                     done();
-                }
+                },
             );
         });
 
-        it('starts bitcore', function () {
-            return startBitcore();
-        });
+        it('starts bitcore', () => startBitcore());
 
-        it('socket and workingUrl are as expected on working bitcore', function (done) {
+        it('socket and workingUrl are as expected on working bitcore', (done) => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain.socket.promise.then((socket) => {
                 assert.ok(socket instanceof Socket);
@@ -180,7 +179,7 @@ describe('bitcore', () => {
             });
         });
 
-        it('does not emit error event on working bitcore', function (done) {
+        it('does not emit error event on working bitcore', (done) => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
 
             let ended = false;
@@ -200,17 +199,13 @@ describe('bitcore', () => {
             }, 19 * 1000);
         });
 
-        it('stops bitcore', function () {
-            return stopBitcore();
-        });
+        it('stops bitcore', () => stopBitcore());
     });
 
     describe('status check', () => {
-        it('starts bitcore', function () {
-            return startBitcore();
-        });
+        it('starts bitcore', () => startBitcore());
 
-        it('resolves on working bitcore', function () {
+        it('resolves on working bitcore', () => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain._silent = true;
             return blockchain.hardStatusCheck().then((res) => {
@@ -219,11 +214,9 @@ describe('bitcore', () => {
             });
         });
 
-        it('stops bitcore', function () {
-            return stopBitcore();
-        });
+        it('stops bitcore', () => stopBitcore());
 
-        it('rejects on non-working bitcore', function () {
+        it('rejects on non-working bitcore', () => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             blockchain._silent = true;
             return blockchain.hardStatusCheck().then((res) => {
@@ -234,12 +227,10 @@ describe('bitcore', () => {
     });
 
     describe('subscribe', () => {
-        it('starts bitcore', function () {
-            return startBitcore();
-        });
+        it('starts bitcore', () => startBitcore());
 
         // note - bitcore.js doesn't know about versions bytes, it doesn't check address validity
-        it('throws on wrong input', function () {
+        it('throws on wrong input', () => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
             for (const inputs of [['foo'], 'foo', [123], new Set([123])]) {
                 try {
@@ -252,42 +243,40 @@ describe('bitcore', () => {
             blockchain.destroy();
         });
 
-        it('socket registers tx mined to address', function (done) {
+        it('socket registers tx mined to address', (done) => {
             const address = getAddress();
 
             testBlockchain((blockchain, done) => {
                 blockchain.subscribe(new Set([address]));
-                blockchain.socket.promise.then(socket => {
+                blockchain.socket.promise.then((socket) => {
                     const stream = socket.observe('bitcoind/addresstxid');
                     testStream(stream, a => assert(/^[a-f0-9]{64}$/.test(a.txid)), 20 * 1000, done);
                 });
-            }, () => run('bitcore-regtest-cli generatetoaddress 1 ' + address), done);
+            }, () => run(`bitcore-regtest-cli generatetoaddress 1 ${address}`), done);
         });
 
-        it('socket registers normal tx', function (done) {
+        it('socket registers normal tx', (done) => {
             const address = getAddress();
 
             testBlockchain((blockchain, done) => {
                 blockchain.subscribe(new Set([address]));
-                blockchain.socket.promise.then(socket => {
+                blockchain.socket.promise.then((socket) => {
                     const stream = socket.observe('bitcoind/addresstxid');
                     testStream(stream, a => assert(/^[a-f0-9]{64}$/.test(a.txid)), 20 * 1000, done);
                 });
             }, () => {
-                run('bitcore-regtest-cli generate 300').then(() =>
-                    run('bitcore-regtest-cli sendtoaddress ' + address + ' 1')
-                );
+                run('bitcore-regtest-cli generate 300').then(() => run(`bitcore-regtest-cli sendtoaddress ${address} 1`));
             }, done);
         });
 
-        it('notifications register tx mined to address', function (done) {
+        it('notifications register tx mined to address', (done) => {
             const saddress = getAddress();
 
             testBlockchain((blockchain, done) => {
                 const stream = blockchain.notifications;
                 blockchain.subscribe(new Set([saddress]));
 
-                testStream(stream, tx => {
+                testStream(stream, (tx) => {
                     // can be either 1 or 2 with second opreturn
                     assert(tx.outputAddresses.length <= 2);
                     assert(tx.outputAddresses[0] === saddress);
@@ -301,13 +290,13 @@ describe('bitcore', () => {
                     assert(raddress === saddress);
                 },
                 20 * 1000, done);
-            }, () => run('bitcore-regtest-cli generatetoaddress 1 ' + saddress), done);
+            }, () => run(`bitcore-regtest-cli generatetoaddress 1 ${saddress}`), done);
         });
 
         let lastTx = null;
         let lastAddress = null;
 
-        it('notifications register normal tx', function (done) {
+        it('notifications register normal tx', (done) => {
             const saddress = getAddress();
 
             // keep address for further tests
@@ -317,28 +306,26 @@ describe('bitcore', () => {
                 const stream = blockchain.notifications;
                 blockchain.subscribe(new Set([saddress]));
 
-                testStream(stream, tx => {
-                    assert(tx.outputAddresses.findIndex((k) => k === saddress) !== -1);
+                testStream(stream, (tx) => {
+                    assert(tx.outputAddresses.findIndex(k => k === saddress) !== -1);
                     assert(tx.zcash === false);
                     assert(tx.vsize === tx.hex.length / 2);
                     const bjstx = bitcoin.Transaction.fromHex(tx.hex, false);
                     assert(!bjstx.isCoinbase());
                     assert(bjstx.getId() === tx.hash);
                     const raddresses = bjstx.outs.map(o => bitcoin.address.fromOutputScript(o.script, bitcoin.networks.testnet));
-                    assert(raddresses.findIndex((k) => k !== saddress) !== -1);
+                    assert(raddresses.findIndex(k => k !== saddress) !== -1);
 
                     // keep tx for further tests
                     lastTx = tx;
                 },
                 20 * 1000, done);
             }, () => {
-                run('bitcore-regtest-cli generate 300').then(() =>
-                    run('bitcore-regtest-cli sendtoaddress ' + saddress + ' 1')
-                );
+                run('bitcore-regtest-cli generate 300').then(() => run(`bitcore-regtest-cli sendtoaddress ${saddress} 1`));
             }, done);
         });
 
-        it('socket registers outgoing tx', function (done) {
+        it('socket registers outgoing tx', (done) => {
             if (lastTx == null) {
                 done(new Error('previous null'));
                 return;
@@ -347,19 +334,19 @@ describe('bitcore', () => {
 
             testBlockchain((blockchain, done) => {
                 blockchain.subscribe(new Set([lastAddress]));
-                blockchain.socket.promise.then(socket => {
+                blockchain.socket.promise.then((socket) => {
                     const stream = socket.observe('bitcoind/addresstxid');
                     testStream(stream, a => assert(/^[a-f0-9]{64}$/.test(a.txid)), 20 * 1000, done);
                 });
             }, () => {
                 const outTx = makeTx(lastTx.hex, lastTx.outputAddresses, outAddress).hex;
-                run('bitcore-regtest-cli sendrawtransaction "' + outTx + '" true');
+                run(`bitcore-regtest-cli sendrawtransaction "${outTx}" true`);
             }, done);
         });
     });
 
     describe('lookupTransactionsStream', () => {
-        it('looks up unconfirmed transactions', function (done) {
+        it('looks up unconfirmed transactions', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -367,9 +354,9 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 return p;
             }, (blockchain, done) => {
@@ -390,7 +377,7 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('looks up confirmed transactions', function (done) {
+        it('looks up confirmed transactions', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -398,9 +385,9 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 p = p.then(() => run('bitcore-regtest-cli generate 300'));
                 return p;
@@ -422,7 +409,7 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('streams error when sent error from bitcore', function (done) {
+        it('streams error when sent error from bitcore', (done) => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
 
             const addresses = [getAddress(), getAddress(), getAddress()];
@@ -434,12 +421,10 @@ describe('bitcore', () => {
             }, 20 * 1000, done);
         });
 
-        it('streams error when bitcore turned off', function (done) {
+        it('streams error when bitcore turned off', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
-            testBlockchain(() => {
-                return stopBitcore();
-            }, (blockchain, done) => {
+            testBlockchain(() => stopBitcore(), (blockchain, done) => {
                 const stream = blockchain.lookupTransactionsStream(addresses, 10000000, 0);
 
                 testStreamMultiple(stream, (e) => {
@@ -448,11 +433,9 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('starts bitcore', function () {
-            return startBitcore();
-        });
+        it('starts bitcore', () => startBitcore());
 
-        it('streams error when bitcore turned off during action', function (done) {
+        it('streams error when bitcore turned off during action', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -460,9 +443,9 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 p = p.then(() => run('bitcore-regtest-cli generate 300'));
                 return p;
@@ -497,11 +480,9 @@ describe('bitcore', () => {
     let lastTx = null;
 
     describe('lookupTransactions + lookupTransactionIds', () => {
-        it('starts bitcore', function () {
-            return startBitcore();
-        });
+        it('starts bitcore', () => startBitcore());
 
-        it('looks up unconfirmed transactions', function (done) {
+        it('looks up unconfirmed transactions', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -509,9 +490,9 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 return p;
             }, (blockchain, done) => {
@@ -532,7 +513,7 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('looks up unconfirmed transactions ids', function (done) {
+        it('looks up unconfirmed transactions ids', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -540,14 +521,14 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 return p;
             }, (blockchain, done) => {
                 const promise = blockchain.lookupTransactionsIds(addresses, 10000000, 0);
-                promise.then(txs => {
+                promise.then((txs) => {
                     assert(txs.length === 300);
                     assert(txs.every(tx => /^[0-9a-f]{64}$/.test(tx)));
                     done();
@@ -555,7 +536,7 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('looks up confirmed transactions ids', function (done) {
+        it('looks up confirmed transactions ids', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -563,15 +544,15 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 p = p.then(() => run('bitcore-regtest-cli generate 300'));
                 return p;
             }, (blockchain, done) => {
                 const promise = blockchain.lookupTransactionsIds(addresses, 10000000, 0);
-                promise.then(txs => {
+                promise.then((txs) => {
                     assert(txs.length === 300);
                     assert(txs.every(tx => /^[0-9a-f]{64}$/.test(tx)));
                     done();
@@ -579,7 +560,7 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('looks up confirmed transactions', function (done) {
+        it('looks up confirmed transactions', (done) => {
             const addresses = [getAddress(), getAddress(), getAddress()];
 
             testBlockchain(() => {
@@ -587,9 +568,9 @@ describe('bitcore', () => {
 
                 for (let i = 0; i < 100; i++) {
                     p = p
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[0] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[1] + ' 1'))
-                        .then(() => run('bitcore-regtest-cli sendtoaddress ' + addresses[2] + ' 1'));
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[0]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[1]} 1`))
+                        .then(() => run(`bitcore-regtest-cli sendtoaddress ${addresses[2]} 1`));
                 }
                 p = p.then(() => run('bitcore-regtest-cli generate 300'));
                 return p;
@@ -614,7 +595,7 @@ describe('bitcore', () => {
             }, done);
         });
 
-        it('streams error when sent error from bitcore', function (done) {
+        it('streams error when sent error from bitcore', (done) => {
             const blockchain = new BitcoreBlockchain(['http://localhost:3005'], socketWorkerFactory);
 
             const addresses = [getAddress(), getAddress(), getAddress()];
@@ -630,18 +611,14 @@ describe('bitcore', () => {
     });
 
     describe('sync status', () => {
-        it('looks up sync status', function (done) {
+        it('looks up sync status', (done) => {
             testBlockchain((blockchain, done) => {
-                blockchain.lookupSyncStatus().then(oldStatus => {
-                    return run('bitcore-regtest-cli generate 300').then(() => {
-                        return blockchain.lookupSyncStatus().then(newStatus => {
-                            assert(typeof oldStatus.height === 'number');
-                            assert(typeof newStatus.height === 'number');
-                            assert(newStatus.height > oldStatus.height);
-                            done();
-                        });
-                    });
-                }).catch((e) => {
+                blockchain.lookupSyncStatus().then(oldStatus => run('bitcore-regtest-cli generate 300').then(() => blockchain.lookupSyncStatus().then((newStatus) => {
+                    assert(typeof oldStatus.height === 'number');
+                    assert(typeof newStatus.height === 'number');
+                    assert(newStatus.height > oldStatus.height);
+                    done();
+                }))).catch((e) => {
                     done(e);
                 });
             }, () => {}, done);
@@ -649,9 +626,9 @@ describe('bitcore', () => {
     });
 
     describe('blockhash', () => {
-        it('looks up blockhash', function (done) {
+        it('looks up blockhash', (done) => {
             testBlockchain((blockchain, done) => {
-                blockchain.lookupBlockHash(0).then(hash => {
+                blockchain.lookupBlockHash(0).then((hash) => {
                     assert(hash === '0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206');
                     done();
                 }).catch((e) => {
@@ -664,7 +641,7 @@ describe('bitcore', () => {
     describe('lookupTransaction + sendTransaction', () => {
         let outTx;
 
-        it('sends tx', function (done) {
+        it('sends tx', (done) => {
             if (lastTx == null) {
                 done(new Error('previous null'));
                 return;
@@ -673,14 +650,14 @@ describe('bitcore', () => {
 
             testBlockchain((blockchain, done) => {
                 outTx = makeTx(lastTx.hex, lastTx.outputAddresses, outAddress);
-                blockchain.sendTransaction(outTx.hex, true).then(id => {
+                blockchain.sendTransaction(outTx.hex, true).then((id) => {
                     assert(outTx.id === id);
                     done();
                 }, err => done(err));
             }, () => {}, done);
         });
 
-        it('looks up tx', function (done) {
+        it('looks up tx', (done) => {
             testBlockchain((blockchain, done) => {
                 blockchain.lookupTransaction(outTx.id).then((tx) => {
                     assert(tx.hash === outTx.id);
@@ -691,9 +668,9 @@ describe('bitcore', () => {
     });
 
     describe('estimatetx fees', () => {
-        it('estimates something', function (done) {
+        it('estimates something', (done) => {
             testBlockchain((blockchain, done) => {
-                blockchain.estimateTxFees([5, 6, 7], false).then(res => {
+                blockchain.estimateTxFees([5, 6, 7], false).then((res) => {
                     assert(typeof res === 'object');
                     assert(Object.keys(res).length === 3);
                     assert(5 in res);
@@ -710,9 +687,9 @@ describe('bitcore', () => {
     });
 
     describe('estimate smart tx fees', () => {
-        it('estimates something', function (done) {
+        it('estimates something', (done) => {
             testBlockchain((blockchain, done) => {
-                blockchain.estimateSmartTxFees([5, 6, 7], false).then(res => {
+                blockchain.estimateSmartTxFees([5, 6, 7], false).then((res) => {
                     assert(typeof res === 'object');
                     assert(Object.keys(res).length === 3);
                     assert(5 in res);
@@ -729,7 +706,7 @@ describe('bitcore', () => {
     });
 
     describe('disconnect errors', () => {
-        it('throws error on disconnect', function (done) {
+        it('throws error on disconnect', (done) => {
             testBlockchain((blockchain, done) => {
                 testStream(blockchain.errors, a => a instanceof Error, 20 * 1000, done);
             }, () => stopBitcore(), done);

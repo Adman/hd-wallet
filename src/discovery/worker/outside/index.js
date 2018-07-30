@@ -1,29 +1,33 @@
 /* @flow */
 
+import type { Network as BitcoinJsNetwork } from 'bitcoinjs-lib-zcash';
+import bchaddrjs from 'bchaddrjs';
 import type {
     PromiseRequestType,
     StreamRequestType,
     ChunkDiscoveryInfo,
 } from '../types';
 
-import type {Network as BitcoinJsNetwork} from 'bitcoinjs-lib-zcash';
 
 import { Emitter, Stream, StreamWithEnding } from '../../../utils/stream';
-import type {Blockchain, TransactionWithHeight} from '../../../bitcore';
+import type { Blockchain, TransactionWithHeight } from '../../../bitcore';
 import type { AddressSource } from '../../../address-source';
 import type { AccountInfo, AccountLoadStatus, ForceAddedTransaction } from '../../index';
 
-import {WorkerChannel} from './channel';
+import { WorkerChannel } from './channel';
 
-import bchaddrjs from 'bchaddrjs';
 
 type WorkerFactory = () => Worker;
 
 export class WorkerDiscoveryHandler {
     blockchain: Blockchain;
+
     addressSources: Array<?AddressSource>;
+
     workerChannel: WorkerChannel;
+
     network: BitcoinJsNetwork;
+
     cashAddress: boolean;
 
     // this array is the SAME object as in the WorkerDiscovery object
@@ -37,12 +41,12 @@ export class WorkerDiscoveryHandler {
         addressSources: Array<?AddressSource>,
         network: BitcoinJsNetwork,
         cashAddress: boolean,
-        forceAddedTransactions: Array<ForceAddedTransaction>
+        forceAddedTransactions: Array<ForceAddedTransaction>,
     ) {
         this.blockchain = blockchain;
         this.addressSources = addressSources;
 
-        this.workerChannel = new WorkerChannel(f, (r) => this.getPromise(r), (r) => this.getStream(r));
+        this.workerChannel = new WorkerChannel(f, r => this.getPromise(r), r => this.getStream(r));
         this.network = network;
         this.cashAddress = cashAddress;
         this.forceAddedTransactions = forceAddedTransactions;
@@ -73,7 +77,7 @@ export class WorkerDiscoveryHandler {
             gap,
             timeOffset,
         });
-        this.workerChannel.postToWorker({type: 'startDiscovery'});
+        this.workerChannel.postToWorker({ type: 'startDiscovery' });
 
         const promise = this.workerChannel.resPromise(() => this.counter.finisher.emit());
 
@@ -98,10 +102,10 @@ export class WorkerDiscoveryHandler {
                 p.startBlock,
                 p.endBlock,
                 p.chainId === 0,
-                p.addresses
+                p.addresses,
             );
         }
-        return Stream.simple('Unknown request ' + p.type);
+        return Stream.simple(`Unknown request ${p.type}`);
     }
 
     getPromise(p: PromiseRequestType): Promise<any> {
@@ -109,13 +113,13 @@ export class WorkerDiscoveryHandler {
             return this.blockchain.lookupBlockHash(p.height);
         }
         if (p.type === 'lookupSyncStatus') {
-            return this.blockchain.lookupSyncStatus().then(({height}) => height);
+            return this.blockchain.lookupSyncStatus().then(({ height }) => height);
         }
         if (p.type === 'doesTransactionExist') {
             return this.blockchain.lookupTransaction(p.txid)
                 .then(() => true, () => false);
         }
-        return Promise.reject(new Error('Unknown request ' + p.type));
+        return Promise.reject(new Error(`Unknown request ${p.type}`));
     }
 
     static deriveAddresses(
@@ -127,12 +131,10 @@ export class WorkerDiscoveryHandler {
         if (addresses == null) {
             if (source == null) {
                 return Promise.reject(new Error('Cannot derive addresses in worker without webassembly'));
-            } else {
-                return source.derive(firstIndex, lastIndex);
             }
-        } else {
-            return Promise.resolve(addresses);
+            return source.derive(firstIndex, lastIndex);
         }
+        return Promise.resolve(addresses);
     }
 
     getChunkStream(
@@ -142,22 +144,22 @@ export class WorkerDiscoveryHandler {
         startBlock: number,
         endBlock: number,
         add: boolean,
-        addresses: ?Array<string>
+        addresses: ?Array<string>,
     ): Stream<ChunkDiscoveryInfo | string> {
         const addressPromise = WorkerDiscoveryHandler.deriveAddresses(source, addresses, firstIndex, lastIndex);
 
         return Stream.fromPromise(
-            addressPromise.then(addresses => {
+            addressPromise.then((addresses) => {
                 if (this.cashAddress) {
                     addresses = addresses.map(a => bchaddrjs.toCashAddress(a));
                 }
 
                 return this.blockchain.lookupTransactionsStream(addresses, endBlock, startBlock)
-                .map(
-                    transactions => {
-                        if (transactions instanceof Error) {
-                            return transactions.message;
-                        } else {
+                    .map(
+                        (transactions) => {
+                            if (transactions instanceof Error) {
+                                return transactions.message;
+                            }
                             const transactions_: Array<TransactionWithHeight> = transactions;
 
                             // code for handling forceAdded transactions
@@ -173,7 +175,7 @@ export class WorkerDiscoveryHandler {
                                     this.forceAddedTransactions.slice(i, 1);
                                 } else {
                                     const txAddresses = new Set();
-                                    transaction.inputAddresses.concat(transaction.outputAddresses).forEach(a => {
+                                    transaction.inputAddresses.concat(transaction.outputAddresses).forEach((a) => {
                                         if (a != null) {
                                             txAddresses.add(a);
                                         }
@@ -190,24 +192,26 @@ export class WorkerDiscoveryHandler {
                                 transactions: transactions.concat(addedTransactions), addresses,
                             };
                             return ci;
-                        }
-                    }
-                );
-            })
+                        },
+                    );
+            }),
         );
     }
 }
 
 class TransactionCounter {
     count: number = 0;
+
     emitter: Emitter<AccountLoadStatus> = new Emitter();
+
     finisher: Emitter<void> = new Emitter();
+
     stream: Stream<AccountLoadStatus> = Stream.fromEmitterFinish(this.emitter, this.finisher, () => { });
+
     setCount(i: number) {
         if (i > this.count) {
             this.count = i;
-            this.emitter.emit({transactions: this.count});
+            this.emitter.emit({ transactions: this.count });
         }
     }
 }
-

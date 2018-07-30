@@ -17,7 +17,9 @@ export function setLogCommunication() {
 
 export class Socket {
     endpoint: string;
+
     socket: SocketWorkerHandler;
+
     _socketInited: Promise<void>;
 
     streams: Array<Stream<any>> = [];
@@ -34,9 +36,8 @@ export class Socket {
 
     close() {
         this.streams.forEach(stream => stream.dispose());
-        this._socketInited.then(() =>
-            this.socket.close()
-        , () => {});
+        this._socketInited.then(() => this.socket.close(),
+            () => {});
     }
 
     observe(event: string): Stream<any> {
@@ -55,8 +56,11 @@ const disconnectErrorTypes = ['connect_error', 'reconnect_error', 'close', 'disc
 
 class SocketWorkerHandler {
     _worker: ?Worker;
+
     workerFactory: () => Worker;
+
     _emitter: ?Emitter<SocketWorkerOutMessage>;
+
     counter: number;
 
     constructor(workerFactory: () => Worker) {
@@ -81,7 +85,7 @@ class SocketWorkerHandler {
 
         worker.postMessage(JSON.stringify({
             type: 'init',
-            endpoint: endpoint,
+            endpoint,
             connectionType: type,
         }));
         return dfd.promise;
@@ -101,7 +105,7 @@ class SocketWorkerHandler {
                 };
                 this._emitter = emitter;
 
-                disconnectErrorTypes.forEach(type => {
+                disconnectErrorTypes.forEach((type) => {
                     this.observe(type).map(() => {
                         // almost the same as this.close(),
                         // but doesn't call destroy()
@@ -113,8 +117,6 @@ class SocketWorkerHandler {
                         this._emitter = null;
                     });
                 });
-
-                return;
             });
     }
 
@@ -133,7 +135,7 @@ class SocketWorkerHandler {
         const counter = this.counter;
         this._sendMessage({
             type: 'send',
-            message: message,
+            message,
             id: counter,
         });
         const dfd = deferred();
@@ -146,7 +148,7 @@ class SocketWorkerHandler {
             }
 
             if (message.type === 'sendReply' && message.id === counter) {
-                const {result, error} = message.reply;
+                const { result, error } = message.reply;
                 if (error != null) {
                     dfd.reject(error);
                 } else {
@@ -171,7 +173,7 @@ class SocketWorkerHandler {
         const counter = this.counter;
         this._sendMessage({
             type: 'observe',
-            event: event,
+            event,
             id: counter,
         });
 
@@ -183,23 +185,20 @@ class SocketWorkerHandler {
             () => {
                 this._sendMessage({
                     type: 'unobserve',
-                    event: event,
+                    event,
                     id: counter,
                 });
-            }
+            },
         )
-        .filter((message) => message.type === 'emit' && message.event === event)
-        .map((message) => {
-            // $FlowIssue it always have data because of the filtering
-            return message.data;
-        });
+            .filter(message => message.type === 'emit' && message.event === event)
+            .map(message => message.data);
     }
 
     subscribe(event: string, ...values: Array<any>) {
         this._sendMessage({
             type: 'subscribe',
-            event: event,
-            values: values,
+            event,
+            values,
         });
     }
 
