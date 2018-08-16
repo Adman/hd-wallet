@@ -54,7 +54,7 @@ test-bitcore:
 	`npm bin`/mocha --compilers js:babel-register test/test_bitcore/bitcore.js
 
 flow:
-	`npm bin`/flow check src
+	`npm bin`/flow check
 
 eslint:
 	cd src && `npm bin`/eslint .
