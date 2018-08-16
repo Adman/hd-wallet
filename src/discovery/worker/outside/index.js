@@ -6,7 +6,7 @@ import type {
     ChunkDiscoveryInfo,
 } from '../types';
 
-import type {Network as BitcoinJsNetwork} from 'bitcoinjs-lib-zcash';
+import type {Network as BitcoinJsNetwork} from 'bitcoinjs-trezor';
 
 import { Emitter, Stream, StreamWithEnding } from '../../../utils/stream';
 import type {Blockchain, TransactionWithHeight} from '../../../bitcore';

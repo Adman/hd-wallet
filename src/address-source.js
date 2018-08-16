@@ -2,13 +2,13 @@
  * Derivation of addresses from HD nodes
  */
 
-import type { HDNode } from 'bitcoinjs-lib-zcash';
-import type { Network } from 'bitcoinjs-lib-zcash';
+import type { HDNode } from 'bitcoinjs-trezor';
+import type { Network } from 'bitcoinjs-trezor';
 import type { WorkerChannel } from './utils/simple-worker-channel';
 import {
     crypto,
     address,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
 export type AddressSource = {
     derive(

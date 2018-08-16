@@ -10,10 +10,10 @@ import {transactionBytes} from './coinselect-lib/utils';
 
 import type {
     Network as BitcoinJsNetwork,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 import {
     address as BitcoinJsAddress,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
 import type {UtxoInfo} from '../discovery';
 import * as request from './request';

@@ -4,7 +4,7 @@ import assert from 'assert';
 import {buildTx} from '../src/build-tx';
 import {Permutation} from '../src/build-tx/permutation';
 
-import bitcoin from 'bitcoinjs-lib-zcash';
+import bitcoin from 'bitcoinjs-trezor';
 
 import fixtures from './fixtures/build-tx.json';
 

@@ -4,11 +4,11 @@ import {Permutation} from './permutation';
 import {
     address as BitcoinJsAddress,
     script as BitcoinJsScript,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
 import type {
     Network as BitcoinJsNetwork,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
 import type {UtxoInfo} from '../discovery';
 import * as coinselect from './coinselect';

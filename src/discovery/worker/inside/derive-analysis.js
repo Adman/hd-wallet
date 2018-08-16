@@ -24,7 +24,7 @@ import {
 
 import {
     Transaction as BitcoinJsTransaction,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
 type OutputForAnalysis = ?{address: string, value: number};
 type OutputsForAnalysis = Array<OutputForAnalysis>;

@@ -30,8 +30,8 @@ import {
     address as BitcoinJsAddress,
     HDNode as BitcoinJsHDNode,
     script as BitcoinJsScript,
-} from 'bitcoinjs-lib-zcash';
-import type {Network as BitcoinJsNetwork} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
+import type {Network as BitcoinJsNetwork} from 'bitcoinjs-trezor';
 import type {TransactionInfo} from '../../index';
 import { BrowserAddressSource } from '../../../address-source';
 import bchaddrjs from 'bchaddrjs';

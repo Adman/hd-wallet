@@ -13,9 +13,9 @@ import type {
 
 import type {
     Transaction as BitcoinJsTransaction,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
-import type {Network as BitcoinJsNetwork} from 'bitcoinjs-lib-zcash';
+import type {Network as BitcoinJsNetwork} from 'bitcoinjs-trezor';
 
 /* ----- messages INTO into worker, from handler ------ */
 

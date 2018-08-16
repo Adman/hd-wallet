@@ -13,7 +13,7 @@ import type {
 import type {
     AccountInfo,
 } from '../../index';
-import type {Network as BitcoinJsNetwork} from 'bitcoinjs-lib-zcash';
+import type {Network as BitcoinJsNetwork} from 'bitcoinjs-trezor';
 
 // Code for all communication with outside
 

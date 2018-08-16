@@ -16,10 +16,10 @@ import {
     getInputId,
 } from '../utils';
 
-import type { Input as BitcoinJsInput } from 'bitcoinjs-lib-zcash';
+import type { Input as BitcoinJsInput } from 'bitcoinjs-trezor';
 import {
     Transaction as BitcoinJsTransaction,
-} from 'bitcoinjs-lib-zcash';
+} from 'bitcoinjs-trezor';
 
 // what is hapenning here:
 // I have a state with old utxo set
