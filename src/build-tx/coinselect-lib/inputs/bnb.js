@@ -1,3 +1,5 @@
+/* @flow weak */
+
 const utils = require('../utils');
 
 const maxTries = 1000000;

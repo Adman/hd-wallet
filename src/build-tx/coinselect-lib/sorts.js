@@ -1,3 +1,5 @@
+/* @flow weak */
+
 const utils = require('./utils');
 
 function score(feeRate) {
