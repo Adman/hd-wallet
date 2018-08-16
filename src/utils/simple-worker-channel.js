@@ -11,6 +11,7 @@
 export class WorkerChannel {
     lastI: number = 0;
     worker: Worker;
+    // $FlowIssueAnyType
     pending: {[i: number]: ((f: any) => any)};
     onMessage: (event: Event) => void;
 
@@ -26,6 +27,7 @@ export class WorkerChannel {
         this.worker.addEventListener('message', this.onMessage);
     }
 
+    // $FlowIssueAnyType
     postMessage(msg: Object): Promise<any> {
         return new Promise((resolve) => {
             this.pending[this.lastI] = resolve;
@@ -34,6 +36,7 @@ export class WorkerChannel {
         });
     }
 
+    // $FlowIssueAnyType
     receiveMessage(event: any) {
         const i: number = event.data.i;
         const dfd = this.pending[i];

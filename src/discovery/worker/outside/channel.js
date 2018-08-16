@@ -18,7 +18,9 @@ import queue from 'queue';
 type WorkerFactory = () => Worker;
 
 // will get injected
+// $FlowIssueAnyType
 type GetPromise = (p: PromiseRequestType) => Promise<any>;
+// $FlowIssueAnyType
 type GetStream = (p: StreamRequestType) => Stream<any>;
 
 const CONCURRENT_WORKERS = 4;

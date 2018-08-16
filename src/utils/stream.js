@@ -370,6 +370,7 @@ export class Stream<T> {
     // note: this DOES keep the order
     mapPromise<U>(fn: (value: T) => Promise<U>): Stream<U> {
         return new Stream((update, finish) => {
+            // $FlowIssueAnyType
             let previous: Promise<any> = Promise.resolve();
             let disposed = false;
             this.values.attach((value) => {
@@ -394,6 +395,7 @@ export class Stream<T> {
 
     mapPromiseError<U>(fn: (value: T) => Promise<U>): Stream<U | Error> {
         return new Stream((update, finish) => {
+            // $FlowIssueAnyType
             let previous: Promise<any> = Promise.resolve();
             let disposed = false;
             this.values.attach((value) => {

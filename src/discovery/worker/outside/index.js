@@ -84,6 +84,7 @@ export class WorkerDiscoveryHandler {
 
     counter = new TransactionCounter();
 
+    // $FlowIssueAnyType
     getStream(p: StreamRequestType): Stream<any> {
         if (p.type === 'chunkTransactions') {
             const source = this.addressSources[p.chainId];
@@ -103,6 +104,7 @@ export class WorkerDiscoveryHandler {
         return Stream.simple('Unknown request ' + p.type);
     }
 
+    // $FlowIssueAnyType
     getPromise(p: PromiseRequestType): Promise<any> {
         if (p.type === 'lookupBlockHash') {
             return this.blockchain.lookupBlockHash(p.height);
