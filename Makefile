@@ -48,7 +48,7 @@ coverage-html:
 	`npm bin`/nyc --reporter=html --check-coverage mocha --compilers js:babel-register
 
 coverage:
-	`npm bin`/nyc --check-coverage mocha --compilers js:babel-register 
+	NODE_ENV=coverage `npm bin`/nyc --check-coverage mocha --compilers js:babel-register 
 
 test-bitcore:
 	`npm bin`/mocha --compilers js:babel-register test/test_bitcore/bitcore.js
