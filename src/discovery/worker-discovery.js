@@ -44,10 +44,7 @@ export class WorkerDiscovery {
 
     tryHDNode(xpub: string, network: BitcoinJsNetwork): BitcoinJsHDNode | Error {
         try {
-            const node = BitcoinJsHDNode.fromBase58(xpub, network, true);
-            if (!node.isNeutered()) {
-                throw new Error('XPRV entrered instead of XPUB. Exiting.');
-            }
+            const node = BitcoinJsHDNode.fromBase58(xpub, network);
             return node;
         } catch (e) {
             return e;
@@ -115,8 +112,8 @@ export class WorkerDiscovery {
 
         return StreamWithEnding.fromPromise(
             Promise.all([this.deriveXpub(xpub, network, 0), this.deriveXpub(xpub, network, 1)]).then(([externalXpub, internalXpub]) => {
-                const internal = BitcoinJsHDNode.fromBase58(internalXpub, network, true);
-                const external = BitcoinJsHDNode.fromBase58(externalXpub, network, true);
+                const internal = BitcoinJsHDNode.fromBase58(internalXpub, network);
+                const external = BitcoinJsHDNode.fromBase58(externalXpub, network);
 
                 const sources = [
                     this.createWorkerAddressSource(external, network, segwit),
@@ -156,8 +153,8 @@ export class WorkerDiscovery {
         }
         return Stream.fromPromise(
             Promise.all([this.deriveXpub(xpub, network, 0), this.deriveXpub(xpub, network, 1)]).then(([externalXpub, internalXpub]) => {
-                const internal = BitcoinJsHDNode.fromBase58(internalXpub, network, true);
-                const external = BitcoinJsHDNode.fromBase58(externalXpub, network, true);
+                const internal = BitcoinJsHDNode.fromBase58(internalXpub, network);
+                const external = BitcoinJsHDNode.fromBase58(externalXpub, network);
 
                 const sources = [
                     this.createWorkerAddressSource(external, network, segwit),
@@ -239,7 +236,7 @@ export class WorkerDiscovery {
     ): Promise<string> {
         const addressWorkerChannel = this.addressWorkerChannel;
         if (addressWorkerChannel == null) {
-            return Promise.resolve(BitcoinJsHDNode.fromBase58(xpub, network, true).derive(index).toBase58());
+            return Promise.resolve(BitcoinJsHDNode.fromBase58(xpub, network).derive(index).toBase58());
         } else {
             return addressWorkerChannel.postMessage({
                 type: 'deriveNode',
