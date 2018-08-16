@@ -63,10 +63,10 @@ export class MockBitcore {
     specLock: boolean = false;
     spec: Array<Spec>;
 
-    doneError: (f: Error) => any;
-    deepEqual: (a: any, b: any) => any;
+    doneError: (f: Error) => void;
+
     errored: boolean = false;
-    constructor(spec: Array<Spec>, doneError: (f: Error) => any) {
+    constructor(spec: Array<Spec>, doneError: (f: Error) => void) {
         this.spec = spec;
         this.doneError = (f: Error) => {
             if (!this.errored) {
