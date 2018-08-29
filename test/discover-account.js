@@ -41,7 +41,7 @@ describe('discover account', () => {
                 if (err !== fixture.endError) {
                     console.log('Discovery result', JSON.stringify(err, null, 2));
                     console.log('Fixture', JSON.stringify(fixture.endError, null, 2));
-                    done(new Error('Result not the same'));
+                    done(new Error('Result not the same - ' + JSON.stringify(err) + "-" + JSON.stringify(fixture.endError)));
                 } else {
                     if (blockchain.spec.length > 0) {
                         console.log(JSON.stringify(blockchain.spec));
